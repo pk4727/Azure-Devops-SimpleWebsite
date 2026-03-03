@@ -3,13 +3,18 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
+
+# This section defines when the pipeline should run. Here it triggers automatically on every commit to the master branch.
 trigger:
 - master
 
+# This section specifies the virtual machine image the pipeline will use to run all tasks.
 pool:
   vmImage: ubuntu-latest
 
+
 steps:
+# TASK 1: This step runs Maven to compile the project, run tests, and package the application.
 - task: Maven@3
   inputs:
     mavenPomFile: 'pom.xml'
@@ -20,10 +25,14 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package'
+
+# TASK 2: This step copies the generated WAR file into the artifact staging directory so it can be published later.
 - task: CopyFiles@2
   inputs:
     Contents: '**/.war'
     TargetFolder: '$(build.artifactstagingdirectory)'
+
+# TASK 3: This step publishes the staged WAR file as a build artifact that can be downloaded or used by release pipelines.
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
